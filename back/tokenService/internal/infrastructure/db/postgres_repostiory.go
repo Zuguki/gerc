@@ -18,13 +18,14 @@ type repository struct {
 
 func (r *repository) Create(ctx context.Context, token *domain.Token) error {
 	q := `
-INSERT INTO token 
+INSERT INTO db 
 	(name, symbol, decimals, contract_address, owner_wallet_address, date_of_create)
 VALUES
     ($1, $2, $3, $4, $5, $6)
 RETURNING id;
 `
 	r.log.Debug(fmt.Sprintf("SQL Request: %s", formatQuery(q)))
+
 	if err := r.client.QueryRow(ctx, q, token.Name, token.Symbol, token.Decimals, token.ContractAddress, token.OwnerWalletAddress, token.DateOfCreate).Scan(&token.ID); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.Is(err, pgErr) {
@@ -42,7 +43,7 @@ func (r *repository) FindAll(ctx context.Context) (token []domain.Token, err err
 	q := `
 SELECT 
 	id, name, symbol, decimals, contract_address, owner_wallet_address, date_of_create, date_of_update
-FROM token
+FROM db
 `
 
 	r.log.Debug(fmt.Sprintf("SQL Request: %s", formatQuery(q)))
@@ -74,7 +75,7 @@ func (r *repository) FindById(ctx context.Context, tokenId string) (domain.Token
 	q := `
 SELECT 
 	id, name, symbol, decimals, contract_address, owner_wallet_address, date_of_create, date_of_update
-FROM token
+FROM db
 WHERE id = $1
 `
 
@@ -92,7 +93,7 @@ func (r *repository) FindBySymbol(ctx context.Context, symbol string) (domain.To
 	q := `
 SELECT 
 	id, name, symbol, decimals, contract_address, owner_wallet_address, date_of_create, date_of_update
-FROM token
+FROM db
 WHERE symbol = $1
 `
 
